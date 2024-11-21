@@ -1,0 +1,49 @@
+run:
+  timeout: 1m
+
+linters:
+  enable-all: true
+  disable:
+    - depguard
+    - paralleltest
+    - testifylint
+    - funlen
+    - exhaustruct
+    - tagliatelle
+    - ireturn
+    - testpackage
+    - godox
+    - gomnd
+    - mnd
+    - gochecknoinits
+  fast: true
+
+
+# Settings for specific linters
+linters-settings:
+  revive:
+    ignore-generated-header: true
+    rules:
+      - name: "unused-parameter"
+        disabled: true
+
+  funlen:
+    lines: 250
+    statements: 45
+
+  wsl:
+    allow-separated-leading-comment: true
+    allow-trailing-comment: true
+
+
+issues:
+  exclude-rules:
+    - linters:
+        - wsl
+      text: "block should not start with a whitespace"
+      
+    - path: _test\.go
+      linters:
+        - containedctx
+        - wsl
+        - lll

@@ -1,0 +1,46 @@
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+.direnv
+
+# Test
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.*
+coverage.out
+
+# Generated bin
+bin/
+dist/
+
+# Temporary bin
+tmp/
+
+# Dependencies (run: go mod vendor)
+vendor/
+
+# IDE project files
+*.vscode/
+
+# PyCharm files
+.idea/
+
+# OS files
+.DS_Store
+
+# Generated env.{environment} files
+.env.*
+*.env.*
+*.env
+.env
+
+# UML
+*.plum
+html
+
+# Terraform
+resources/terraform/.terraform/
