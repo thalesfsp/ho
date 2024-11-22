@@ -110,7 +110,7 @@ func DefaultConfig() OptimizationConfig {
 // - Total runtime = InitialSamples + Iterations evaluations
 // - Each iteration evaluates exactly one point
 // - Memory usage scales with number of evaluations
-// - Consider reducing NumCandidates if iterations are too slow
+// - Consider reducing NumCandidates if iterations are too slow.
 func OptimizeHyperparameters[T constraints.Integer | constraints.Float](
 	config OptimizationConfig,
 	benchmarkFunc BenchmarkFunc[T],
@@ -120,6 +120,7 @@ func OptimizeHyperparameters[T constraints.Integer | constraints.Float](
 	// values. Using current time as seed ensures different random sequences
 	// across runs.
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+
 	var rngMu sync.Mutex
 
 	// safeRandomParams generates a set of random parameters within the specified ranges
@@ -136,20 +137,26 @@ func OptimizeHyperparameters[T constraints.Integer | constraints.Float](
 		defer rngMu.Unlock()
 
 		params := make([]T, len(hypers))
+
 		for i, hyper := range hypers {
 			switch any(hyper.Min).(type) {
 			case int, int32, int64:
 				// For integer types, generate random integer in range
 				min := int64(hyper.Min)
+
 				max := int64(hyper.Max)
+
 				params[i] = T(min + rng.Int63n(max-min+1))
 			case float32, float64:
 				// For float types, generate random float in range
 				min := float64(hyper.Min)
+
 				max := float64(hyper.Max)
+
 				params[i] = T(min + rng.Float64()*(max-min))
 			}
 		}
+
 		return params
 	}
 
@@ -159,6 +166,7 @@ func OptimizeHyperparameters[T constraints.Integer | constraints.Float](
 		for i, v := range params {
 			floats[i] = float64(v)
 		}
+
 		return floats
 	}
 
@@ -182,10 +190,13 @@ func OptimizeHyperparameters[T constraints.Integer | constraints.Float](
 
 			// Convert current and best params to []int for backward compatibility
 			currentInts := make([]int, len(currentParams))
+
 			bestInts := make([]int, len(bestParams))
+
 			for i, v := range currentParams {
 				currentInts[i] = int(v)
 			}
+
 			for i, v := range bestParams {
 				bestInts[i] = int(v)
 			}
@@ -222,6 +233,7 @@ func OptimizeHyperparameters[T constraints.Integer | constraints.Float](
 
 		if executionTime < bestTime {
 			bestTime = executionTime
+
 			copy(bestParams, params)
 		}
 	}
@@ -261,6 +273,7 @@ func OptimizeHyperparameters[T constraints.Integer | constraints.Float](
 	// Iteratively select and evaluate new points based on model predictions.
 	for i := 0; i < config.Iterations; i++ {
 		var nextParams []T
+
 		bestAcquisition := math.MaxFloat64
 
 		// Update acquisition function with current best time
@@ -271,6 +284,7 @@ func OptimizeHyperparameters[T constraints.Integer | constraints.Float](
 		for j := 0; j < config.NumCandidates; j++ {
 			// Generate random candidate parameters
 			candidateParams := safeRandomParams(hypers)
+
 			floatCandidateParams := paramsToFloat64s(candidateParams)
 
 			// Get model's prediction for these parameters
@@ -282,25 +296,29 @@ func OptimizeHyperparameters[T constraints.Integer | constraints.Float](
 			// Update if this is the most promising candidate so far
 			if acquisition < bestAcquisition {
 				bestAcquisition = acquisition
+
 				nextParams = candidateParams
 			}
 		}
 
-		// Evaluate the most promising candidate
+		// Evaluate the most promising candidate.
 		startTime := time.Now()
+
 		err := benchmarkFunc(nextParams...)
+
 		executionTime := float64(time.Since(startTime).Nanoseconds())
 
-		// Apply penalty if the benchmark failed
+		// Apply penalty if the benchmark failed.
 		if err != nil {
 			executionTime = math.MaxFloat64/2 + executionTime
 		}
 
-		// Update model with the new observation
+		// Update model with the new observation.
 		floatNextParams := paramsToFloat64s(nextParams)
+
 		gp.Update(floatNextParams, executionTime)
 
-		// Update best parameters if this is better
+		// Update best parameters if this is better.
 		updateBest(nextParams, executionTime)
 
 		sendProgress("Optimization", i+1, config.Iterations, nextParams, executionTime)

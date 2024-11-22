@@ -16,6 +16,9 @@ linters:
     - gomnd
     - mnd
     - gochecknoinits
+    - dupword
+    - predeclared
+    - gocognit
   fast: true
 
 
