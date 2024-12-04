@@ -1,5 +1,7 @@
 # ho (Hyperparameter Optimizer)
 
+![ho](https://github.com/user-attachments/assets/d7ac0b7c-15ea-4494-884c-2949b572be23)
+
 A powerful Go library for automated hyperparameter optimization using Bayesian optimization with Gaussian Processes. The package provides efficient, thread-safe optimization capabilities for tuning system parameters with minimal manual intervention.
 
 ## Features
