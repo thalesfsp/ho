@@ -22,7 +22,7 @@ A powerful Go library for automated hyperparameter optimization using Bayesian o
 ## Install
 
 ```bash
-go get github.com/yourusername/ho
+go get github.com/thalesfsp/ho
 ```
 
 ## Acquisition Functions
