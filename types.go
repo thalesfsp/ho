@@ -34,7 +34,7 @@ type ProgressUpdate struct {
 // Each hyperparameter must have a minimum and maximum value to define its search space.
 //
 // Type Parameter:
-//   - T: The numeric type for this parameter range (int64 or float64)
+//   - T: Any integer or floating-point type, including named types
 //
 // Fields:
 // - Min: The minimum (inclusive) value for this hyperparameter
@@ -75,7 +75,7 @@ type ParameterRange[T constraints.Integer | constraints.Float] struct {
 // This function type represents the task whose parameters you want to optimize.
 //
 // Type Parameter:
-//   - T: The numeric type for parameters (int64 or float64)
+//   - T: Any integer or floating-point type, including named types
 //
 // Parameters:
 //   - params: Variable number of numeric parameters representing the hyperparameters
@@ -268,6 +268,7 @@ type OptimizationConfig struct {
 	// NumCandidates determines how many random candidates to consider in each
 	// iteration before selecting the best one to evaluate.
 	// Higher values = more thorough search but slower iterations.
+	// Values below 1 are treated as 1 to keep evaluations in the search space.
 	// Recommended range: 50-500
 	NumCandidates int
 

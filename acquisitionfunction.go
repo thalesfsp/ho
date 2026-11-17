@@ -62,7 +62,20 @@ func UCB(mean, variance float64, params AcquisitionParams) float64 {
 //	}
 //	prob := ProbabilityOfImprovement(0.9, 0.2, params)
 func ProbabilityOfImprovement(mean, variance float64, params AcquisitionParams) float64 {
-	z := (mean - params.BestSoFar - params.Xi) / math.Sqrt(variance)
+	improvement := mean - params.BestSoFar - params.Xi
+
+	if variance <= 0 {
+		switch {
+		case improvement > 0:
+			return 1
+		case improvement < 0:
+			return 0
+		default:
+			return 0.5
+		}
+	}
+
+	z := improvement / math.Sqrt(variance)
 
 	return normalCDF(z)
 }
@@ -95,11 +108,16 @@ func ProbabilityOfImprovement(mean, variance float64, params AcquisitionParams) 
 //	}
 //	expected := ExpectedImprovement(0.9, 0.2, params)
 func ExpectedImprovement(mean, variance float64, params AcquisitionParams) float64 {
+	improvement := mean - params.BestSoFar - params.Xi
+	if variance <= 0 {
+		return math.Max(0, improvement)
+	}
+
 	sigma := math.Sqrt(variance)
 
-	z := (mean - params.BestSoFar - params.Xi) / sigma
+	z := improvement / sigma
 
-	return (mean-params.BestSoFar-params.Xi)*normalCDF(z) + sigma*normalPDF(z)
+	return improvement*normalCDF(z) + sigma*normalPDF(z)
 }
 
 // ThompsonSampling implements Thompson Sampling acquisition by drawing random
