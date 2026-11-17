@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Sample function to be benchmarked.
@@ -54,7 +55,12 @@ func TestOptimizeBufferSize(t *testing.T) {
 	)
 
 	// Assert has `optimalSize` has two elements.
-	assert.Len(t, optimalSize, 2)
+	require.Len(t, optimalSize, 2)
+
+	for i, bounds := range ranges {
+		assert.GreaterOrEqual(t, optimalSize[i], bounds.Min)
+		assert.LessOrEqual(t, optimalSize[i], bounds.Max)
+	}
 }
 
 func TestOptimizeBufferSizeChannel(t *testing.T) {
@@ -105,7 +111,12 @@ func TestOptimizeBufferSizeChannel(t *testing.T) {
 	assert.Greater(t, atomic.LoadInt32(&counter), int32(0))
 
 	// Ensure optimal parameters are returned.
-	assert.Len(t, bestParams, 2)
+	require.Len(t, bestParams, 2)
+
+	for i, bounds := range ranges {
+		assert.GreaterOrEqual(t, bestParams[i], bounds.Min)
+		assert.LessOrEqual(t, bestParams[i], bounds.Max)
+	}
 }
 
 // Sample function to be benchmarked.
@@ -153,7 +164,12 @@ func TestOptimizeBufferSizeFloat(t *testing.T) {
 	)
 
 	// Assert has `optimalSize` has two elements.
-	assert.Len(t, optimalSize, 2)
+	require.Len(t, optimalSize, 2)
+
+	for i, bounds := range ranges {
+		assert.GreaterOrEqual(t, optimalSize[i], bounds.Min)
+		assert.LessOrEqual(t, optimalSize[i], bounds.Max)
+	}
 }
 
 func TestOptimizeBufferSizeChannelFloat(t *testing.T) {
@@ -204,5 +220,10 @@ func TestOptimizeBufferSizeChannelFloat(t *testing.T) {
 	assert.Greater(t, atomic.LoadInt32(&counter), int32(0))
 
 	// Ensure optimal parameters are returned.
-	assert.Len(t, bestParams, 2)
+	require.Len(t, bestParams, 2)
+
+	for i, bounds := range ranges {
+		assert.GreaterOrEqual(t, bestParams[i], bounds.Min)
+		assert.LessOrEqual(t, bestParams[i], bounds.Max)
+	}
 }

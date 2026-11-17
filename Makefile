@@ -8,7 +8,6 @@ BIN_DIR := bin
 BIN_PATH := $(BIN_DIR)/$(BIN_NAME)
 
 HAS_GODOC := $(shell command -v godoc;)
-HAS_GOLANGCI := $(shell command -v golangci-lint;)
 HAS_GORELEASER := $(shell command -v goreleaser;)
 
 default: ci
@@ -23,7 +22,10 @@ build:
 build-dev:
 	@go build -gcflags="all=-N -l" -o $(BIN_PATH) && echo "Build OK"
 
-ci: build lint
+ci: build lint test
+
+test:
+	@go test -count=1 ./...
 
 doc:
 ifndef HAS_GODOC
@@ -34,11 +36,7 @@ endif
 	@godoc -http :6060
 
 lint:
-ifndef HAS_GOLANGCI
-	@echo "Could not find golangci-list, installing it"
-	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.61.0
-endif
-	@golangci-lint run -v -c .golangci.yml && echo "Lint OK"
+	@mise exec -- golangci-lint run -v -c .golangci.yml && echo "Lint OK"
 
 release-local:
 ifndef HAS_GORELEASER
@@ -50,6 +48,7 @@ endif
 .PHONY: build \
 	build-dev \
 	ci \
-	doc \
 	lint \
+	test \
+	doc \
 	release-local

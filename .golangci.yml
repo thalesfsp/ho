@@ -1,52 +1,82 @@
+version: "2"
 run:
   timeout: 1m
-
+# Preserve the 38 checks enabled by v1.61.0 fast mode. Formatting checks
+# moved to formatters; wsl and gomodguard use their maintained successors.
 linters:
-  enable-all: true
-  disable:
-    - depguard
-    - paralleltest
-    - testifylint
-    - funlen
-    - exhaustruct
-    - tagliatelle
-    - ireturn
-    - testpackage
-    - godox
-    - gomnd
-    - mnd
-    - gochecknoinits
-    - dupword
-    - predeclared
-    - gocognit
-  fast: true
-
-
-# Settings for specific linters
-linters-settings:
-  revive:
-    ignore-generated-header: true
+  default: none
+  enable:
+    - asciicheck
+    - bidichk
+    - copyloopvar
+    - decorder
+    - dogsled
+    - dupl
+    - forcetypeassert
+    - gocheckcompilerdirectives
+    - goconst
+    - gocyclo
+    - godot
+    - goheader
+    - gomoddirectives
+    - gomodguard_v2
+    - goprintffuncname
+    - grouper
+    - inamedparam
+    - ineffassign
+    - interfacebloat
+    - lll
+    - maintidx
+    - misspell
+    - nakedret
+    - nestif
+    - nlreturn
+    - nolintlint
+    - nosprintfhostport
+    - prealloc
+    - promlinter
+    - tagalign
+    - testableexamples
+    - usestdlibvars
+    - whitespace
+    - wsl_v5
+  settings:
+    funlen:
+      lines: 250
+      statements: 45
+    revive:
+      rules:
+        - name: unused-parameter
+          disabled: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
     rules:
-      - name: "unused-parameter"
-        disabled: true
-
-  funlen:
-    lines: 250
-    statements: 45
-
-  wsl:
-    allow-separated-leading-comment: true
-    allow-trailing-comment: true
-
-
-issues:
-  exclude-rules:
-    - linters:
-        - wsl
-      text: "block should not start with a whitespace"
-      
-    - path: _test\.go
-      linters:
-        - containedctx
-        - wsl
-        - lll
+      - linters:
+          - wsl_v5
+        text: block should not start with a whitespace
+      - linters:
+          - containedctx
+          - lll
+          - wsl_v5
+        path: _test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

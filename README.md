@@ -21,6 +21,9 @@ A powerful Go library for automated hyperparameter optimization using Bayesian o
 
 ## Install
 
+Requires Go 1.26.11 or newer. Local development and CI use Go 1.27.4, pinned
+in `mise.toml` and `.tool-versions`; run Go commands with `mise exec --`.
+
 ```bash
 go get github.com/thalesfsp/ho
 ```

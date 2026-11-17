@@ -164,10 +164,11 @@ func (gp *gaussianProcess) Predict(x []float64) (mean, variance float64) {
 	var sum float64
 
 	for i := range gp.X {
-		sum += k[i] * gp.Y[i]
+		// Scale before summing so finite failure penalties cannot overflow.
+		sum += (k[i] / float64(len(gp.X))) * gp.Y[i]
 	}
 
-	mean = sum / float64(len(gp.X))
+	mean = sum
 
 	// Calculate variance.
 	variance = 1.0
@@ -177,6 +178,8 @@ func (gp *gaussianProcess) Predict(x []float64) (mean, variance float64) {
 			variance -= k[i] * k[j] / float64(len(gp.X))
 		}
 	}
+
+	variance = math.Max(0, variance)
 
 	return mean, variance
 }
@@ -262,6 +265,7 @@ func (gp *gaussianProcess) Update(x []float64, y float64) {
 func (gp *gaussianProcess) SetSigma(sigma float64) {
 	gp.mu.Lock()
 	defer gp.mu.Unlock()
+
 	gp.sigma = sigma
 }
 

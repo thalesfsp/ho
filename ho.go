@@ -35,7 +35,7 @@ func DefaultConfig() OptimizationConfig {
 // functions to efficiently search the parameter space.
 //
 // Type Parameter:
-//   - T: The numeric type for parameters (int64 or float64)
+//   - T: Any integer or floating-point type, including named types
 //
 // Parameters:
 // - config: OptimizationConfig controlling the optimization process
@@ -116,6 +116,9 @@ func OptimizeHyperparameters[T constraints.Integer | constraints.Float](
 	benchmarkFunc BenchmarkFunc[T],
 	hypers ...ParameterRange[T],
 ) []T {
+	// Always consider at least one candidate so every evaluation has parameters.
+	config.NumCandidates = max(1, config.NumCandidates)
+
 	// Initialize thread-safe random number generator for generating parameter
 	// values. Using current time as seed ensures different random sequences
 	// across runs.
@@ -139,22 +142,32 @@ func OptimizeHyperparameters[T constraints.Integer | constraints.Float](
 		params := make([]T, len(hypers))
 
 		for i, hyper := range hypers {
-			switch any(hyper.Min).(type) {
-			case int, int32, int64:
-				// For integer types, generate random integer in range
-				min := int64(hyper.Min)
+			// Division distinguishes the complete integer and float type sets,
+			// including named types, without a concrete-type switch.
+			if T(1)/T(2) != 0 {
+				r := rng.Float64()
+				value := T((1-r)*float64(hyper.Min) + r*float64(hyper.Max))
+				params[i] = min(hyper.Max, max(hyper.Min, value))
 
-				max := int64(hyper.Max)
-
-				params[i] = T(min + rng.Int63n(max-min+1))
-			case float32, float64:
-				// For float types, generate random float in range
-				min := float64(hyper.Min)
-
-				max := float64(hyper.Max)
-
-				params[i] = T(min + rng.Float64()*(max-min))
+				continue
 			}
+
+			// Unsigned subtraction also handles signed ranges crossing zero.
+			// A zero span represents the entire 64-bit range.
+			minimum := uint64(hyper.Min)
+			span := uint64(hyper.Max) - minimum + 1
+			offset := rng.Uint64()
+
+			if span != 0 {
+				// Reject the short remainder to avoid modulo bias.
+				for offset < -span%span {
+					offset = rng.Uint64()
+				}
+
+				offset %= span
+			}
+
+			params[i] = T(minimum + offset)
 		}
 
 		return params
@@ -284,6 +297,9 @@ func OptimizeHyperparameters[T constraints.Integer | constraints.Float](
 		for j := 0; j < config.NumCandidates; j++ {
 			// Generate random candidate parameters
 			candidateParams := safeRandomParams(hypers)
+			if nextParams == nil {
+				nextParams = candidateParams
+			}
 
 			floatCandidateParams := paramsToFloat64s(candidateParams)
 
@@ -294,7 +310,7 @@ func OptimizeHyperparameters[T constraints.Integer | constraints.Float](
 			acquisition := config.AcquisitionFunc(mean, variance, config.AcqParams)
 
 			// Update if this is the most promising candidate so far
-			if acquisition < bestAcquisition {
+			if !math.IsNaN(acquisition) && !math.IsInf(acquisition, 0) && acquisition < bestAcquisition {
 				bestAcquisition = acquisition
 
 				nextParams = candidateParams
